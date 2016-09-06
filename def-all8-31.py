@@ -30,7 +30,7 @@ def pd():
     db.test1.save(
         #{"haspoint": haspoint,"ArticleTitle":ArticleTitle,"spidertime":spidertime, "num": num}
         {"spidertime":spidertime,"媒体":MediaFrom,"haspoint":haspoint,"ArticleTitle":ArticleTitle,
-        "ArticlePubTime":ArticlePubTime,"ArticleFrom":ArticleFrom,"link":link,"融360":num1,"网贷之家":num2,"网贷天眼":num3,"金评媒·":num4,"零壹财经":num5,"的":num6}
+        "ArticlePubTime":ArticlePubTime,"ArticleFrom":ArticleFrom,"link":link,"融360":num1,"网贷之家":num2,"网贷天眼":num3,"金评媒":num4,"零壹财经":num5,"的":num6}
     )
         #"ArticlePubTime":ArticlePubTime,"ArticleFrom":ArticleFrom,"link":link
     #return num
@@ -186,8 +186,9 @@ def pq201():
     bs4=html.xpath("//div[@class='box_02']/ul/li/a")
     bs=bs1+bs2+bs3+bs4
     for i in bs:
-        link="".join(i.xpath("@href")).strip()
+        link="".join(i.xpath("@href")).strip().replace("hhttp","http")
         #links.append(link)
+        print link
        
         title="".join(i.xpath('text()')).strip()
         #print link,title
@@ -487,25 +488,28 @@ def pq205():
         l=s.get(link).content
         print link,title
         htm=etree.HTML(l)
-        ArticleTitle="".join(htm.xpath("//h1/text()"))
+        if "".join(htm.xpath("//h1/text()"))=="":
+            continue
+        else:
+            ArticleTitle="".join(htm.xpath("//h1/text()"))
 
-        ArticlePubTime="".join(htm.xpath("//span[@class='time-source']/text()")).strip().replace("\n","").split(" ")[0]
-        if len(ArticlePubTime)==0:
-            ArticlePubTime="".join(htm.xpath("//span[@id='pub_date']/text()")).strip()
-            print ArticlePubTime
+            ArticlePubTime="".join(htm.xpath("//span[@class='time-source']/text()")).strip().replace("\n","").split(" ")[0]
+            if len(ArticlePubTime)==0:
+                ArticlePubTime="".join(htm.xpath("//span[@id='pub_date']/text()")).strip()
+                print ArticlePubTime
 
-        ArticleFrom="".join(htm.xpath("//div[@class='page-info']/span/span/a/text()"))
-        if len(ArticleFrom)==0:
-            ArticleFrom="".join(htm.xpath("//span[@id='media_name']/text()")).strip()
+            ArticleFrom="".join(htm.xpath("//div[@class='page-info']/span/span/a/text()"))
             if len(ArticleFrom)==0:
-                ArticleFrom="".join(htm.xpath("//span[@class='time-source']/text()")).strip().replace("\n","").replace(" ","")
+                ArticleFrom="".join(htm.xpath("//span[@id='media_name']/text()")).strip()
                 if len(ArticleFrom)==0:
-                    ArticleFrom="专栏"
+                    ArticleFrom="".join(htm.xpath("//span[@class='time-source']/text()")).strip().replace("\n","").replace(" ","")
+                    if len(ArticleFrom)==0:
+                        ArticleFrom="专栏"
 
-        ArticleBody="".join(htm.xpath("//div[@id='artibody']//text()"))
-        
-        if len(ArticleBody)!=0:
-            pd()
+            ArticleBody="".join(htm.xpath("//div[@id='artibody']//text()"))
+            
+            if len(ArticleBody)!=0:
+                pd()
 
 #新浪理财
 def pq309():
@@ -848,17 +852,20 @@ def pq802():
             continue
         l=s.get(link).content
         htm=etree.HTML(l)
-        ArticleTitle="".join(htm.xpath("//h2/text()"))
-        ArticlePubTime="".join(htm.xpath("//span[@id='pubtime_baidu']/text()"))
-        ArticleFrom="".join(htm.xpath("//span[@id='source_baidu']/text()"))
-        if len(ArticleFrom)==0:
-            ArticleFrom="".join(htm.xpath("//span[@id='source_baidu']/a/text()"))
-        ArticleBody="".join(htm.xpath("//div[@id='the_content']//text()"))
-        #print link
-        #print ArticleBody
-        #print ArticleFrom
-        MediaFrom="财经网--地产"
-        pd()
+        if "".join(htm.xpath("//span[@id='pubtime_baidu']/text()")) is None:
+            continue
+        else:
+            ArticleTitle="".join(htm.xpath("//h2/text()"))
+            ArticlePubTime="".join(htm.xpath("//span[@id='pubtime_baidu']/text()"))
+            ArticleFrom="".join(htm.xpath("//span[@id='source_baidu']/text()"))
+            if len(ArticleFrom)==0:
+                ArticleFrom="".join(htm.xpath("//span[@id='source_baidu']/a/text()"))
+            ArticleBody="".join(htm.xpath("//div[@id='the_content']//text()"))
+            #print link
+            #print ArticleBody
+            #print ArticleFrom
+            MediaFrom="财经网--地产"
+            pd()
 
 
 #财经网--金融
@@ -912,17 +919,21 @@ def pq702():
     #print bs
     for i in bs:
         link=i.find("a").get("href").replace("hhttp","http").strip()
-        title=i.find("a").get_text()
-        #print title
-        l=s.get(link)
-        ArticleTitle=BeautifulSoup(l.content).find("h1").get_text()
-        ArticleFrom=BeautifulSoup(l.content).find("div",class_="artInfo").find("a").get_text()
-        ArticlePubTime=BeautifulSoup(l.content).find("div",class_="artInfo").get_text().replace("来源于","").strip()
-        ArticleBody=BeautifulSoup(l.content).find("div",class_="textbox").get_text().strip()
-        MediaFrom="财新网"
+        #title=i.find("a").get_text()
         print link
-        print ArticleTitle
-        pd()
+        l=s.get(link)
+        if BeautifulSoup(l.content).find("div",class_="textbox") is None:
+            continue
+        else:
+            ArticleTitle=BeautifulSoup(l.content).find("h1").get_text()
+            ArticleFrom=BeautifulSoup(l.content).find("div",class_="artInfo").find("a").get_text()
+            ArticlePubTime=BeautifulSoup(l.content).find("div",class_="artInfo").get_text().replace("来源于","").strip()
+            ArticleBody=BeautifulSoup(l.content).find("div",class_="textbox").get_text().strip()
+            MediaFrom="财新网"
+            #print link
+            #print ArticleTitle
+            if len(ArticleTitle)!=0:
+                pd()
 
 #财新网--房产公司【应该算第九类】
 def pq901():
@@ -968,14 +979,17 @@ def pq805():
         title=i.find("a").get_text().strip()
         print title
         l=s.get(link)
-        ArticleTitle=BeautifulSoup(l.content).find("h1").get_text()
-        ArticleFrom=BeautifulSoup(l.content).find("div",class_="artInfo").find("a").get_text()
-        ArticlePubTime=BeautifulSoup(l.content).find("div",class_="artInfo").get_text().replace("来源于","").strip()
-        ArticleBody=BeautifulSoup(l.content).find("div",class_="textbox").get_text().strip()
-        MediaFrom="财新网--金融"
-        print link
-        print ArticleTitle
-        pd()
+        if BeautifulSoup(l.content).find("h1").get_text() is None:
+            continue
+        else:
+            ArticleTitle=BeautifulSoup(l.content).find("h1").get_text()
+            ArticleFrom=BeautifulSoup(l.content).find("div",class_="artInfo").find("a").get_text()
+            ArticlePubTime=BeautifulSoup(l.content).find("div",class_="artInfo").get_text().replace("来源于","").strip()
+            ArticleBody=BeautifulSoup(l.content).find("div",class_="textbox").get_text().strip()
+            MediaFrom="财新网--金融"
+            print link
+            print ArticleTitle
+            pd()
 
 
 #财新网--经济
@@ -1026,13 +1040,14 @@ def pq704():
             continue
         l=s.get(link).content
         htm=etree.HTML(l)
-        ArticleTitle="".join(htm.xpath("//h1/text()")).encode("utf-8")
-        ArticleFrom="".join(htm.xpath("//span[@id='source_baidu']/*/text()"))
-        ArticlePubTime="".join(htm.xpath("//span[@id='pubtime_baidu']/text()"))
-        ArticleBody="".join(htm.xpath("//div[@id='Content']//text()"))
-        MediaFrom="中金在线"
-        #print ArticleTitle,link
-        pd()
+        if len("".join(htm.xpath("//div[@id='Content']//text()")))!=0:
+            ArticleTitle="".join(htm.xpath("//h1/text()"))
+            ArticleFrom="".join(htm.xpath("//span[@id='source_baidu']/*/text()"))
+            ArticlePubTime="".join(htm.xpath("//span[@id='pubtime_baidu']/text()"))
+            ArticleBody="".join(htm.xpath("//div[@id='Content']//text()"))
+            MediaFrom="中金在线"
+            #print ArticleTitle,link
+            pd()
 #中金在线--财经
 def pq810():
     global ArticlePubTime
@@ -1208,6 +1223,7 @@ def pq706():
     for i in bs:
         title=i.get_text().strip()
         link=i.get("href").strip()
+ 
         #print link,title
         if len(title)==0:
             continue
@@ -1249,7 +1265,9 @@ pq308()
 pq309()
 pq701()
 pq702()
+
 #pq703()
+
 pq704()
 pq705()
 pq706()
